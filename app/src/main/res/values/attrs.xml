@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Attributes for Circle ImageView-->
+    <declare-styleable name="CircleImageView">
+        <attr name="is_bordered" format="boolean"/>
+        <attr name="border_width" format="dimension|reference"/>
+        <attr name="radius" format="float|reference"/>
+        <attr name="border_color" format="color|reference"/>
+        <attr name="is_shadowed" format="boolean"/>
+    </declare-styleable>
+
+    <!-- Attributes and Styles for BadgerView-->
+    <declare-styleable name="BadgerView">
+        <attr name="paddingLeftRight" format="integer|reference"/>
+        <attr name="background_color" format="color|reference"/>
+    </declare-styleable>
+</resources>
