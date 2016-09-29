@@ -1,21 +1,17 @@
 package com.fsoc.wallpaper.view;
 
-import android.app.WallpaperManager;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.fsoc.wallpaper.R;
+import com.fsoc.wallpaper.util.SettingSystem;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Random;
 
 public class ScreenSlidePageFragment extends Fragment {
@@ -54,39 +50,34 @@ public class ScreenSlidePageFragment extends Fragment {
 				R.layout.fragment_screen_slide_page, container, false);
 
 		TextView tvLabel = (TextView) rootView.findViewById(R.id.text);
-		// tvLabel.setText(page + " -- " + title);
-
 		tvLabel.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				WallpaperManager myWallpaperManager
-						= WallpaperManager.getInstance(getActivity().getApplicationContext());
-				try {
-					myWallpaperManager.setResource(res[position]);
-					Toast.makeText(getActivity(), "Set wallpaper done!", Toast.LENGTH_LONG).show();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+                if (idPack.equals("1")) {
+                    SettingSystem.setWallpaper(getActivity().getApplicationContext(), res[position]);
+                }
+                else {
+                    String uri = SettingSystem.PATH + idPack + SettingSystem.EXTRA_FOLDER + (position+1) + SettingSystem.FILE_TYPE;
+                    SettingSystem.setWallpaper(getActivity().getApplicationContext(), uri);
+                }
+
 			}
 		});
 
-		// random bg
+		// bg
 		ImageView imageView = (ImageView) rootView.findViewById(R.id.bg);
+		//imageLoader.displayImage(null, imageView);
 
 		if (idPack.equals("1")) {
 			final Random rand = new Random();
 			//diceRoll = rand.nextInt(20);
 			imageLoader.displayImage("drawable://" + res[position], imageView);
 		} else {
-			String uriDir = Environment.getExternalStorageDirectory().getPath() 
-            		+ "/lichaodai/" + idPack + "f/";
-			int size = new File(uriDir).listFiles().length;
-			//int size = getFilesCount(new File(uriDir)); 
-			Random rand = new Random();
+			String uriDir = SettingSystem.PATH + idPack + SettingSystem.EXTRA_FOLDER;
+			//int size = new File(uriDir).listFiles().length;
+			//Random rand = new Random();
 			//diceRoll = rand.nextInt(size);
-			String uri = "file:///mnt/sdcard/lichaodai/" + idPack + "f/"
-					+ (position) + ".jpg";
+			String uri = SettingSystem.URI_PATH + idPack + SettingSystem.EXTRA_FOLDER + (position+1) + SettingSystem.FILE_TYPE;
 			imageLoader.displayImage(uri, imageView);
 		}
 

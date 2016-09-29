@@ -1,16 +1,8 @@
 package com.fsoc.wallpaper;
 
-import java.util.Arrays;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
-import android.telephony.SmsManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,16 +12,22 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.fsoc.wallpaper.model.IdPackList;
-import com.fsoc.wallpaper.model.IdPackObj;
 import com.fsoc.wallpaper.model.ImgPackList;
+import com.fsoc.wallpaper.model.ImgPackObj;
 import com.fsoc.wallpaper.util.CircleImageView;
 import com.fsoc.wallpaper.util.ConnectServer;
+import com.fsoc.wallpaper.util.DownloadPack;
 import com.fsoc.wallpaper.util.JsonResultHandler;
 import com.fsoc.wallpaper.util.SettingsPreference;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
-public class ListPackActivity extends Activity {
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.Arrays;
+
+public class ListPackActivity extends DownloadPack {
 	
 	private ImageLoader imageLoader;
 
@@ -47,25 +45,44 @@ public class ListPackActivity extends Activity {
 			
 			@Override
 			public void run() {
-				final String resutl = ConnectServer.listPackage(ListPackActivity.this);
-				
+				String resutl = ConnectServer.listPackage(ListPackActivity.this);
+
+				/*resutl = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+						"<root>\n" +
+						"   <code>1</code>\n" +
+						"   <result>\n" +
+						"      <element>\n" +
+						"         <id>0</id>\n" +
+						"         <name>name1</name>\n" +
+						"         <pack>http://abc.zip</pack>\n" +
+						"         <thumb>http://abcd.jpg</thumb>\n" +
+						"      </element>\n" +
+						"      <element>\n" +
+						"         <id>1</id>\n" +
+						"         <name>name1</name>\n" +
+						"         <pack>http://abc1.zip</pack>\n" +
+						"         <thumb>http://abcd1.jpg</thumb>\n" +
+						"      </element>\n" +
+						"   </result>\n" +
+						"</root>";*/
+
 				JsonResultHandler resultHandler = new JsonResultHandler(resutl);
 				if (resultHandler.isOk()) {
 					JSONObject jsonObject = resultHandler.getjObj();
 					JSONArray array = null;
 					try {
-						array = jsonObject.getJSONArray("result");
+						jsonObject = jsonObject.getJSONObject("result");
+						array = jsonObject.getJSONArray("element");
 					} catch (JSONException e) {
 						e.printStackTrace();
 					}
 					
 					final ImgPackList packList = new ImgPackList();
-					/*ImgPackObj imgPackObj = new ImgPackObj();
+					ImgPackObj imgPackObj = new ImgPackObj();
 					imgPackObj.setId("1");
-					imgPackObj.setName("Áo dài");
-					imgPackObj.setSubname("áo dài 2016");
+					imgPackObj.setName("Pokemon");
 					imgPackObj.setThumb("drawable://" + R.drawable.bg2);
-					packList.add(imgPackObj);*/
+					packList.add(imgPackObj);
 					
 					if (!array.isNull(0)) {
 						packList.addAll(ImgPackList.initFromJsonArray(array.toString()));
@@ -84,23 +101,22 @@ public class ListPackActivity extends Activity {
 				}
 			}
 		}).start();
-		
-		/*listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-			@Override
-			public void onItemClick(AdapterView<?> parent, View view,
-					int position, long id) {
-				
-				
-			}
-			
-		});*/
 
 	}
 	
-	ImgPackAdapter adapter;
-	
-	@Override
+	private ImgPackAdapter adapter;
+
+    @Override
+    public void downloadFinish(String id) {
+        super.downloadFinish(id);
+
+        SettingsPreference preference = SettingsPreference.getInstance(this);
+        preference.setItemDownloaded("" + id);
+
+        adapter.notifyDataSetChanged();
+    }
+
+    /*@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
 		
@@ -109,21 +125,20 @@ public class ListPackActivity extends Activity {
 			
 			SettingsPreference preference = SettingsPreference.getInstance(this);
 			
-			preference.setItemDownloaded("" + requestCode);
+			preference.setItemDownloaded("" + idPack);
 			
-			IdPackList idPackList = new IdPackList();
+			*//*IdPackList idPackList = new IdPackList();
 			if (IdPackList.initFromJsonArray(preference.getIdList()) != null){ 
 				idPackList.addAll(IdPackList.initFromJsonArray(preference.getIdList()));
 			}
-			
 			IdPackObj idPackObj = new IdPackObj("" + requestCode, idPack);
 			idPackList.add(idPackObj);
-			preference.setIdList(idPackList.toJson());
+			preference.setIdList(idPackList.toJson());*//*
 			
 			adapter.notifyDataSetChanged();
 		}
 		
-	}
+	}*/
 
 	public static class ViewHolder {
 		public TextView firstLine;
@@ -144,8 +159,6 @@ public class ListPackActivity extends Activity {
 			this.activity = activity;
 			this.packList = imgPackList;
 		}
-		
-		
 
 		@Override
 		public View getView(final int position, View convertView, ViewGroup parent) {
@@ -169,11 +182,9 @@ public class ListPackActivity extends Activity {
 			}
 			
 			holder.firstLine.setText(packList.get(position).getName());
-			holder.secondLine.setText(packList.get(position).getSubname());
 			//icon
 			imageLoader.displayImage(packList.get(position).getThumb(), holder.icon);
-			
-			
+
 			SettingsPreference preference = SettingsPreference.getInstance(activity);
 			String[] array = preference.getItemDownloaded().split(",");
 			
@@ -188,53 +199,41 @@ public class ListPackActivity extends Activity {
 				
 				@Override
 				public void onClick(View v) {
-					
+
+					//new DownloadFileFromURL().execute(packList.get(position).getPack(), packList.get(position).getId());
+
 					SettingsPreference preference = SettingsPreference.getInstance(activity);
 					String[] array = preference.getItemDownloaded().split(",");
 					
 					if (Arrays.asList(array).contains(packList.get(position).getId()) || packList.get(position).getId().equals("1")) {
 						String idSub = "1";
 						
-						IdPackList idPackList = new IdPackList(); 
+						/*IdPackList idPackList = new IdPackList();
 						if (IdPackList.initFromJsonArray(preference.getIdList()) != null){ 
 							idPackList.addAll(IdPackList.initFromJsonArray(preference.getIdList()));
 						}
-						
-						
 						for (IdPackObj obj : idPackList) {
 							if (obj.getId().equals(packList.get(position).getId())) {
 								idSub = obj.getIdSub();
 								break;
 							}
-						}
+						}*/
 						
 						//Toast.makeText(activity, "Open pack: " + idSub, Toast.LENGTH_SHORT).show();
 						
-						preference.setIdPack(idSub);
+						preference.setIdPack(packList.get(position).getId());
 						
 						activity.setResult(RESULT_OK);
 						activity.finish();
 					}
 					else {
-					
-						try {
-							SmsManager smsManager = SmsManager.getDefault();
-							smsManager.sendTextMessage(packList.get(position).getSms_to(), 
-									null, packList.get(position).getSms_content(), null, null);
-						} catch (IllegalArgumentException e) {
-							Toast.makeText(activity, "send sms error: empty adress", Toast.LENGTH_SHORT).show();
-						}
 						
-						
-						Toast.makeText(activity, "send sms: " + packList.get(position).getSms_content()
-								+ " to" + packList.get(position).getSms_to(), Toast.LENGTH_SHORT).show();
-						
-						//Toast.makeText(activity, "id: " + packList.get(position).getId(), Toast.LENGTH_SHORT).show();
-						
-						int code = Integer.parseInt(packList.get(position).getId());
-						
-						//activity.startActivity(new Intent(activity, EnterCodeActivity.class));
-						activity.startActivityForResult(new Intent(activity, EnterCodeActivity.class), code);
+						Toast.makeText(activity, "id: " + packList.get(position).getId(), Toast.LENGTH_SHORT).show();
+
+						new DownloadFileFromURL().execute(packList.get(position).getPack(), packList.get(position).getId());
+
+						//int code = Integer.parseInt(packList.get(position).getId());
+						//activity.startActivityForResult(new Intent(activity, EnterCodeActivity.class), code);
 					
 					}
 				}

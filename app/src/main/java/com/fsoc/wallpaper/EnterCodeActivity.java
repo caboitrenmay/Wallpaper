@@ -1,5 +1,24 @@
 package com.fsoc.wallpaper;
 
+import android.app.Activity;
+import android.app.Dialog;
+import android.app.ProgressDialog;
+import android.content.Intent;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
+
+import com.fsoc.wallpaper.util.ConnectServer;
+import com.fsoc.wallpaper.util.JsonResultHandler;
+import com.fsoc.wallpaper.util.SettingSystem;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -11,25 +30,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import android.app.Activity;
-import android.app.Dialog;
-import android.app.ProgressDialog;
-import android.content.Intent;
-import android.os.AsyncTask;
-import android.os.Bundle;
-import android.os.Environment;
-import android.util.Log;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.Toast;
-
-import com.fsoc.wallpaper.util.ConnectServer;
-import com.fsoc.wallpaper.util.JsonResultHandler;
 
 public class EnterCodeActivity extends Activity {
 	 
@@ -98,7 +98,7 @@ public class EnterCodeActivity extends Activity {
              int count;
              
              // make sub folder where contain result file
-             File dir = new File(path + zipname + "f");
+             File dir = new File(path + zipname + SettingSystem.EXTRA_FOLDER);
       	     if(dir.exists() == false){
       	    	dir.mkdirs();
       	     }
@@ -198,16 +198,15 @@ public class EnterCodeActivity extends Activity {
                 // download the file
                 InputStream input = new BufferedInputStream(url.openStream(), 8192);
  
-                File root = android.os.Environment.getExternalStorageDirectory();
-    	        File dir = new File(root.getAbsolutePath() + "/lichaodai");
+                //File root = android.os.Environment.getExternalStorageDirectory();
+    	        //File dir = new File(root.getAbsolutePath() + "/lichaodai");
+                File dir = new File(SettingSystem.PATH);
     	        if(dir.exists() == false){
     	             dir.mkdirs();  
     	        }
     	        
                 // Output stream
-                OutputStream output = new FileOutputStream(
-                		Environment.getExternalStorageDirectory().getPath() 
-                		+ "/lichaodai/" + id);
+                OutputStream output = new FileOutputStream(SettingSystem.PATH + id);
  
                 byte data[] = new byte[1024];
  
@@ -255,8 +254,7 @@ public class EnterCodeActivity extends Activity {
             dismissDialog(progress_bar_type);
             
             if (!id.equals("")) {
-            	unpackZip(Environment.getExternalStorageDirectory().getPath() 
-            		+ "/lichaodai/", id);
+            	unpackZip(SettingSystem.PATH, id);
             	
             	Intent output = new Intent();
                 output.putExtra("id_package", id);

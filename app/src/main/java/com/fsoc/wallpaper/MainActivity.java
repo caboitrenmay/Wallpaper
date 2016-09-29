@@ -4,16 +4,23 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.fsoc.wallpaper.util.SettingSystem;
+
+import java.io.File;
+
 public class MainActivity extends Activity {
+	private static final String TAG = MainActivity.class.getSimpleName();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+
+		initSetting();
 
 		Handler handler = new Handler();
 		Runnable runnable = new Runnable() {
@@ -23,7 +30,16 @@ public class MainActivity extends Activity {
 				finish();
 			}
 		};
-		handler.postDelayed(runnable, 3000);
+		handler.postDelayed(runnable, 1000);
+	}
+
+	private void initSetting() {
+		File dir = new File(SettingSystem.PATH);
+		boolean d = false;
+		if(dir.exists()){
+			d = dir.mkdirs();
+		}
+		Log.d(TAG, "doInBackground: mkdirs: " +d);
 	}
 
 	@Override

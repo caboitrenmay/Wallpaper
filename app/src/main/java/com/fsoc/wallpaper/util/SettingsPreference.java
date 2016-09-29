@@ -59,14 +59,14 @@ public class SettingsPreference {
         return prefs.getString(ITEM_DOWNLOADED, "");
 	}
     
-    public void setIdList(String json) {
+    /*public void setIdList(String json) {
     	prefsEditor.putString(ID_LIST, json);
         prefsEditor.commit();
 	}
     
     public String getIdList() {
         return prefs.getString(ID_LIST, "");
-	}
+	}*/
     
     public void setIdPack(String pack) {
     	prefsEditor.putString(ID_PACK, pack);

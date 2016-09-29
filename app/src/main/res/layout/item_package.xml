@@ -9,9 +9,7 @@
     android:paddingRight="10dp"
     android:paddingTop="11dp" >
 
-    <!-- xmlns:circle="http://schemas.android.com/apk/res-auto" -->
-
-    <com.mtouche.wallpaper.model.CircleImageView
+    <com.fsoc.wallpaper.util.CircleImageView
         android:id="@+id/icon"
         android:layout_width="60dp"
         android:layout_height="60dp"

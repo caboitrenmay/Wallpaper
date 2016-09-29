@@ -101,6 +101,7 @@ public class ScreenSlidePagerActivity extends FragmentActivity {
         public Fragment getItem(int position) {
             //return new ScreenSlidePageFragment();
             Log.d("ScreenSlidePagerAdapter","position: " + position);
+            mCurrentPos = position;
         	return ScreenSlidePageFragment.newInstance(position, idSub);
         }
 
@@ -109,11 +110,15 @@ public class ScreenSlidePagerActivity extends FragmentActivity {
             return NUM_PAGES;
         }
     }
-    
+
+    private int mCurrentPos = 0;
     
     public void getMore(View v) {
     	Intent intent = new Intent(ScreenSlidePagerActivity.this, ListPackActivity.class);
 		startActivityForResult(intent, 0);
+    }
+    public void setWallpaper(View v) {
+        //SettingSystem.
     }
     
     

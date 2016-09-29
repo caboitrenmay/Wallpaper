@@ -1,5 +1,23 @@
 package com.fsoc.wallpaper.util;
 
+import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager.NameNotFoundException;
+import android.provider.Settings.Secure;
+import android.util.Log;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.ByteArrayBuffer;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -13,32 +31,36 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.util.ByteArrayBuffer;
-
-import android.content.Context;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager.NameNotFoundException;
-import android.provider.Settings.Secure;
-import android.util.Log;
-
 @SuppressWarnings("deprecation")
 public class ConnectServer {
 
-	private final static String SERVER = "http://bekool.vn/calendar/";
-	private final static String STATUS = "status.php";
-	private final static String LIST = "list.php";
+	private final static String SERVER = "http://103.48.83.25:8033/";
+	//private final static String STATUS = "call.xml";
+	private final static String LIST = "call.xml";
 	private final static String DOWNLOAD = "download.php";
 
 	private static final String TAG = "ConnectServer";
+
+	public static String connect_simple_ori_get(String url) {
+		Log.d(TAG, "connect_simple_ori_get connect: " + url);
+
+		String result = "";
+
+		HttpClient httpclient = new DefaultHttpClient();
+		HttpGet httpGet = new HttpGet(url);
+
+		try {
+			HttpResponse response = httpclient.execute(httpGet);
+			result = convertStreamToString(response.getEntity().getContent());
+		} catch (ClientProtocolException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		Log.d(TAG, "connect_simple_ori result: " + result);
+
+		return result;
+	}
 
 	public static String connect_simple_ori(String url,
 			List<NameValuePair> params) {
@@ -139,13 +161,8 @@ public class ConnectServer {
 
 	public static String listPackage(Context context) {
 		String url = SERVER + LIST;
-		ArrayList<NameValuePair> params = new ArrayList<>();
 
-		params.add(new BasicNameValuePair("id", getDeviceId(context)));
-		params.add(new BasicNameValuePair("type", "1"));
-		params.add(new BasicNameValuePair("v", getVersion(context)));
-
-		return connect_simple_ori(url, params);
+		return connect_simple_ori_get(url);
 	}
 
 	public static String getPack(String code, Context context) {
