@@ -12,6 +12,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.fsoc.wallpaper.db.FeedReaderSQLite;
 import com.fsoc.wallpaper.model.ImgPackList;
 import com.fsoc.wallpaper.model.ImgPackObj;
 import com.fsoc.wallpaper.util.CircleImageView;
@@ -26,6 +27,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Arrays;
+import java.util.List;
 
 public class ListPackActivity extends DownloadPack {
 	
@@ -40,11 +42,22 @@ public class ListPackActivity extends DownloadPack {
 		
 		final ListView listview = (ListView) findViewById(R.id.listview);
 		
-		
 		new Thread(new Runnable() {
 			
 			@Override
 			public void run() {
+
+
+                final ImgPackList packList = new ImgPackList();
+                ImgPackObj imgPackObj = new ImgPackObj();
+                imgPackObj.setId("1");
+                imgPackObj.setName("Pokemon");
+                imgPackObj.setThumb("drawable://" + R.drawable.bg2);
+                packList.add(imgPackObj);
+
+                // add db
+                packList.addAll(getObjectsDb());
+
 				String resutl = ConnectServer.listPackage(ListPackActivity.this);
 
 				/*resutl = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -76,29 +89,22 @@ public class ListPackActivity extends DownloadPack {
 					} catch (JSONException e) {
 						e.printStackTrace();
 					}
-					
-					final ImgPackList packList = new ImgPackList();
-					ImgPackObj imgPackObj = new ImgPackObj();
-					imgPackObj.setId("1");
-					imgPackObj.setName("Pokemon");
-					imgPackObj.setThumb("drawable://" + R.drawable.bg2);
-					packList.add(imgPackObj);
+
 					
 					if (!array.isNull(0)) {
 						packList.addAll(ImgPackList.initFromJsonArray(array.toString()));
 					}
-					
-					if (packList.size() > 0) {
-						runOnUiThread(new Runnable() {
-							public void run() {
-								adapter = new ImgPackAdapter(ListPackActivity.this, packList);
-								listview.setAdapter(adapter);
-							}
-						});
-						
-					}
-					
 				}
+
+                if (packList.size() > 0) {
+                    runOnUiThread(new Runnable() {
+                        public void run() {
+                            adapter = new ImgPackAdapter(ListPackActivity.this, packList);
+                            listview.setAdapter(adapter);
+                        }
+                    });
+
+                }
 			}
 		}).start();
 
@@ -109,36 +115,13 @@ public class ListPackActivity extends DownloadPack {
     @Override
     public void downloadFinish(String id) {
         super.downloadFinish(id);
+		if (id.equals("ERROR")) return;
 
         SettingsPreference preference = SettingsPreference.getInstance(this);
         preference.setItemDownloaded("" + id);
 
         adapter.notifyDataSetChanged();
     }
-
-    /*@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		super.onActivityResult(requestCode, resultCode, data);
-		
-		if (resultCode == RESULT_OK) {
-			String idPack = data.getStringExtra("id_package");
-			
-			SettingsPreference preference = SettingsPreference.getInstance(this);
-			
-			preference.setItemDownloaded("" + idPack);
-			
-			*//*IdPackList idPackList = new IdPackList();
-			if (IdPackList.initFromJsonArray(preference.getIdList()) != null){ 
-				idPackList.addAll(IdPackList.initFromJsonArray(preference.getIdList()));
-			}
-			IdPackObj idPackObj = new IdPackObj("" + requestCode, idPack);
-			idPackList.add(idPackObj);
-			preference.setIdList(idPackList.toJson());*//*
-			
-			adapter.notifyDataSetChanged();
-		}
-		
-	}*/
 
 	public static class ViewHolder {
 		public TextView firstLine;
@@ -206,35 +189,16 @@ public class ListPackActivity extends DownloadPack {
 					String[] array = preference.getItemDownloaded().split(",");
 					
 					if (Arrays.asList(array).contains(packList.get(position).getId()) || packList.get(position).getId().equals("1")) {
-						String idSub = "1";
-						
-						/*IdPackList idPackList = new IdPackList();
-						if (IdPackList.initFromJsonArray(preference.getIdList()) != null){ 
-							idPackList.addAll(IdPackList.initFromJsonArray(preference.getIdList()));
-						}
-						for (IdPackObj obj : idPackList) {
-							if (obj.getId().equals(packList.get(position).getId())) {
-								idSub = obj.getIdSub();
-								break;
-							}
-						}*/
-						
-						//Toast.makeText(activity, "Open pack: " + idSub, Toast.LENGTH_SHORT).show();
-						
 						preference.setIdPack(packList.get(position).getId());
-						
 						activity.setResult(RESULT_OK);
 						activity.finish();
 					}
 					else {
-						
 						Toast.makeText(activity, "id: " + packList.get(position).getId(), Toast.LENGTH_SHORT).show();
+                        // save to db
+                        saveToDb(packList.get(position));
 
 						new DownloadFileFromURL().execute(packList.get(position).getPack(), packList.get(position).getId());
-
-						//int code = Integer.parseInt(packList.get(position).getId());
-						//activity.startActivityForResult(new Intent(activity, EnterCodeActivity.class), code);
-					
 					}
 				}
 			});
@@ -257,4 +221,18 @@ public class ListPackActivity extends DownloadPack {
 			return position;
 		}
 	}
+
+    private boolean saveToDb(ImgPackObj obj) {
+        FeedReaderSQLite sqLite = new FeedReaderSQLite(this);
+        if (sqLite.putObject(obj) > 0) {
+            sqLite.closeDb();
+            return true;
+        }
+        return false;
+    }
+
+    private List<ImgPackObj> getObjectsDb() {
+        FeedReaderSQLite sqLite = new FeedReaderSQLite(this);
+        return sqLite.getAllObjects();
+    }
 }

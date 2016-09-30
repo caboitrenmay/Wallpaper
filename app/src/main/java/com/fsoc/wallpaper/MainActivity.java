@@ -4,13 +4,10 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import com.fsoc.wallpaper.util.SettingSystem;
-
-import java.io.File;
 
 public class MainActivity extends Activity {
 	private static final String TAG = MainActivity.class.getSimpleName();
@@ -20,26 +17,20 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
-		initSetting();
+        SettingSystem settingSystem = new SettingSystem(getApplicationContext());
+        if (!settingSystem.initSetting()) {
+            finish();
+        }
 
 		Handler handler = new Handler();
 		Runnable runnable = new Runnable() {
 			@Override
 			public void run() {
-				startActivity(new Intent(MainActivity.this, ScreenSlidePagerActivity.class));
+				startActivity(new Intent(getApplicationContext(), ScreenSlidePagerActivity.class));
 				finish();
 			}
 		};
 		handler.postDelayed(runnable, 1000);
-	}
-
-	private void initSetting() {
-		File dir = new File(SettingSystem.PATH);
-		boolean d = false;
-		if(dir.exists()){
-			d = dir.mkdirs();
-		}
-		Log.d(TAG, "doInBackground: mkdirs: " +d);
 	}
 
 	@Override

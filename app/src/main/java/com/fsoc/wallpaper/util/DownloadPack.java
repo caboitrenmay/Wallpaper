@@ -6,6 +6,9 @@ import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.fsoc.wallpaper.db.FeedReaderSQLite;
+import com.fsoc.wallpaper.model.ImgPackObj;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -58,27 +61,28 @@ public class DownloadPack extends Activity {
             int count;
             try {
                 URL url = new URL(code[0]);
-                //String id = f_url[1];
-                URLConnection conection = url.openConnection();
-                conection.connect();
+                URLConnection connection = url.openConnection();
+                connection.connect();
                 // this will be useful so that you can show a tipical 0-100% progress bar
-                int lenghtOfFile = conection.getContentLength();
-
+                int lenghtOfFile = connection.getContentLength();
                 // download the file
                 InputStream input = new BufferedInputStream(url.openStream(), 8192);
 
+                String appPath = SettingSystem.getAppPath(DownloadPack.this);
 
-                String fileName = SettingSystem.PATH + code[1];
-                File file = new File(SettingSystem.PATH + code[1]);
-                boolean d = false;
-                if(!file.exists()){
-                    d = file.createNewFile();
+                String fileName = appPath + code[1];
+                Log.d(TAG, "doInBackground: fileName: " + fileName);
+                File file = new File(fileName);
+                if (!file.createNewFile()) {
+                    Log.d(TAG, "doInBackground: cannot createNewFile!");
                 }
-                Log.d(TAG, "doInBackground: createNewFile: " +d);
+                if (!file.exists()) {
+                    Log.e(TAG, "doInBackground: have not: " + fileName);
+                    return "ERROR";
+                }
 
                 // Output stream
-                OutputStream output = new FileOutputStream(fileName);
-                //OutputStream output = new FileOutputStream(dir);
+                OutputStream output = new FileOutputStream(file);
 
                 byte data[] = new byte[1024];
 
@@ -88,7 +92,7 @@ public class DownloadPack extends Activity {
                     total += count;
                     // publishing the progress....
                     // After this onProgressUpdate will be called
-                    publishProgress(""+(int)((total*100)/lenghtOfFile));
+                    publishProgress("" + (int) ((total * 100) / lenghtOfFile));
 
                     // writing data to file
                     output.write(data, 0, count);
@@ -101,11 +105,17 @@ public class DownloadPack extends Activity {
                 output.close();
                 input.close();
 
+                if (unpackZip(fileName)) {
+                    Log.d(TAG, "doInBackground: unpackZip is success!");
+                    updateThumb(code[1], fileName);
+                    // update thumbnail as first photo.
+
+                }
+
             } catch (Exception e) {
                 Log.e("Error: ", e.getMessage());
+                return "ERROR";
             }
-
-            //unpackZip(SettingSystem.PATH, code[1]);
 
             return code[1];
         }
@@ -177,23 +187,29 @@ public class DownloadPack extends Activity {
         pDialog.dismiss();
     }
 
-    private boolean unpackZip(String path, String zipname)
+    private boolean unpackZip(String fullPath)
     {
         InputStream is;
         ZipInputStream zis;
         try
         {
             String filename;
-            is = new FileInputStream(path + zipname);
+            is = new FileInputStream(fullPath);
             zis = new ZipInputStream(new BufferedInputStream(is));
             ZipEntry ze;
             byte[] buffer = new byte[1024];
             int count;
 
             // make sub folder where contain result file
-            File dir = new File(path + zipname + SettingSystem.EXTRA_FOLDER);
-            if(dir.exists() == false){
-                dir.mkdirs();
+            String folderExtra = fullPath + SettingSystem.EXTRA_FOLDER;
+            Log.d(TAG, "unpackZip: folderExtra: " + folderExtra);
+            File dir = new File(folderExtra);
+            if(!dir.mkdirs()){
+                Log.e(TAG, "unpackZip: Directory not created: " + folderExtra);
+            }
+            if (!dir.exists()) {
+                Log.e(TAG, "unpackZip: have not: " + folderExtra);
+                return false;
             }
 
             int i = 1;
@@ -205,7 +221,7 @@ public class DownloadPack extends Activity {
                 // Need to create directories if not exists, or
                 // it will generate an Exception...
                 if (ze.isDirectory()) {
-                    File fmd = new File(path + filename);
+                    File fmd = new File(fullPath + filename);
                     fmd.mkdirs();
                     continue;
                 }
@@ -235,4 +251,12 @@ public class DownloadPack extends Activity {
         return true;
     }
 
+    private int updateThumb(String id, String fullPath) {
+        String firstFile = fullPath + SettingSystem.EXTRA_FOLDER + "1.jpg";
+
+        FeedReaderSQLite sqLite = new FeedReaderSQLite(this);
+        ImgPackObj obj = sqLite.getObject(id);
+        obj.setThumb(firstFile);
+        return sqLite.updateObject(obj);
+    }
 }

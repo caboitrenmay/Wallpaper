@@ -2,6 +2,7 @@ package com.fsoc.wallpaper.view;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +14,8 @@ import com.fsoc.wallpaper.util.SettingSystem;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
 import java.util.Random;
+
+import static com.nostra13.universalimageloader.core.ImageLoader.TAG;
 
 public class ScreenSlidePageFragment extends Fragment {
 
@@ -57,7 +60,8 @@ public class ScreenSlidePageFragment extends Fragment {
                     SettingSystem.setWallpaper(getActivity().getApplicationContext(), res[position]);
                 }
                 else {
-                    String uri = SettingSystem.PATH + idPack + SettingSystem.EXTRA_FOLDER + (position+1) + SettingSystem.FILE_TYPE;
+                    String uri = SettingSystem.getAppPath(getContext()) + idPack + SettingSystem.EXTRA_FOLDER + (position+1) + SettingSystem.FILE_TYPE;
+					Log.d(TAG, "onCreateView: uri: " + uri);
                     SettingSystem.setWallpaper(getActivity().getApplicationContext(), uri);
                 }
 
@@ -73,11 +77,12 @@ public class ScreenSlidePageFragment extends Fragment {
 			//diceRoll = rand.nextInt(20);
 			imageLoader.displayImage("drawable://" + res[position], imageView);
 		} else {
-			String uriDir = SettingSystem.PATH + idPack + SettingSystem.EXTRA_FOLDER;
+			//String uriDir = SettingSystem.PATH + idPack + SettingSystem.EXTRA_FOLDER;
 			//int size = new File(uriDir).listFiles().length;
 			//Random rand = new Random();
 			//diceRoll = rand.nextInt(size);
-			String uri = SettingSystem.URI_PATH + idPack + SettingSystem.EXTRA_FOLDER + (position+1) + SettingSystem.FILE_TYPE;
+			String uri = SettingSystem.getAppUri(getContext()) + idPack + SettingSystem.EXTRA_FOLDER + (position+1) + SettingSystem.FILE_TYPE;
+			Log.d(TAG, "onCreateView: uri: " + uri);
 			imageLoader.displayImage(uri, imageView);
 		}
 

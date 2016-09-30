@@ -8,6 +8,14 @@ public class ImgPackObj {
 	private String thumb;
 	private String pack;
 
+	public ImgPackObj() {
+	}
+
+	public ImgPackObj(String name, String thumb) {
+		this.name = name;
+		this.thumb = thumb;
+	}
+
 	public String getId() {
 		return id;
 	}

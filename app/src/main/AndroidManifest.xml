@@ -5,12 +5,6 @@
     android:versionName="1.0" 
     android:largeHeap="true">
 
-    <uses-sdk
-        android:minSdkVersion="8"
-        android:targetSdkVersion="21" />
-
-    <permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -32,10 +26,9 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".ScreenSlidePagerActivity"></activity>
-        <activity android:name=".ListPackActivity"></activity>
-        <activity android:name=".EnterCodeActivity"></activity>
-        
+        <activity android:name=".ScreenSlidePagerActivity"/>
+        <activity android:name=".ListPackActivity"/>
+
     </application>
 
 </manifest>
