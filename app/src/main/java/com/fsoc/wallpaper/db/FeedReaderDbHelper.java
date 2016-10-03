@@ -5,6 +5,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import static android.provider.BaseColumns._ID;
+import static com.fsoc.wallpaper.db.FeedReaderContract.FeedEntry.COLUMN_NAME_PACK;
 import static com.fsoc.wallpaper.db.FeedReaderContract.FeedEntry.COLUMN_NAME_SUBTITLE;
 import static com.fsoc.wallpaper.db.FeedReaderContract.FeedEntry.COLUMN_NAME_TITLE;
 import static com.fsoc.wallpaper.db.FeedReaderContract.FeedEntry.TABLE_NAME;
@@ -24,7 +25,9 @@ public class FeedReaderDbHelper extends SQLiteOpenHelper {
             "CREATE TABLE " + TABLE_NAME + " (" +
                     _ID + " INTEGER PRIMARY KEY," +
                     COLUMN_NAME_TITLE + TEXT_TYPE + COMMA_SEP +
-                    COLUMN_NAME_SUBTITLE + TEXT_TYPE + " )";
+                    COLUMN_NAME_SUBTITLE + TEXT_TYPE + COMMA_SEP +
+                    COLUMN_NAME_PACK + TEXT_TYPE +
+                    " )";
 
     private static final String SQL_DELETE_ENTRIES =
             "DROP TABLE IF EXISTS " + TABLE_NAME;

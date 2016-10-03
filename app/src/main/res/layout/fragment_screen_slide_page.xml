@@ -13,7 +13,7 @@
         android:layout_centerVertical="true"
         android:src="@null" />
 
-    <RelativeLayout
+    <!--<RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
@@ -32,6 +32,6 @@
             android:clickable="true"
             android:textColor="@android:color/white"/>
 
-    </RelativeLayout>
+    </RelativeLayout>-->
 
 </RelativeLayout>

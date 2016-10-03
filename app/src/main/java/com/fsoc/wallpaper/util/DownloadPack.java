@@ -1,7 +1,6 @@
 package com.fsoc.wallpaper.util;
 
 import android.app.Activity;
-import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -37,7 +36,12 @@ public class DownloadPack extends Activity {
     /**
      * Background Async Task to download file
      * */
-    public class DownloadFileFromURL extends AsyncTask<String, String, String> {
+    public class DownloadFileFromURL extends AsyncTask<Void, String, String> {
+        private ImgPackObj mPack;
+
+        public DownloadFileFromURL(ImgPackObj packObj) {
+            mPack = packObj;
+        }
 
         /**
          * Before starting background thread
@@ -47,20 +51,18 @@ public class DownloadPack extends Activity {
         protected void onPreExecute() {
             Log.d(TAG, "onPreExecute");
             super.onPreExecute();
-            //showDialog(progress_bar_type);
             initPrgDlg();
-            showPrgDlg();
         }
 
         /**
          * Downloading file in background thread
          * */
         @Override
-        protected String doInBackground(String... code) {
+        protected String doInBackground(Void... a) {
             Log.d(TAG, "doInBackground");
             int count;
             try {
-                URL url = new URL(code[0]);
+                URL url = new URL(mPack.getPack());
                 URLConnection connection = url.openConnection();
                 connection.connect();
                 // this will be useful so that you can show a tipical 0-100% progress bar
@@ -70,7 +72,7 @@ public class DownloadPack extends Activity {
 
                 String appPath = SettingSystem.getAppPath(DownloadPack.this);
 
-                String fileName = appPath + code[1];
+                String fileName = appPath + mPack.getId();
                 Log.d(TAG, "doInBackground: fileName: " + fileName);
                 File file = new File(fileName);
                 if (!file.createNewFile()) {
@@ -107,9 +109,9 @@ public class DownloadPack extends Activity {
 
                 if (unpackZip(fileName)) {
                     Log.d(TAG, "doInBackground: unpackZip is success!");
-                    updateThumb(code[1], fileName);
-                    // update thumbnail as first photo.
 
+                    // update item
+                    insertDb(mPack, fileName);
                 }
 
             } catch (Exception e) {
@@ -117,7 +119,7 @@ public class DownloadPack extends Activity {
                 return "ERROR";
             }
 
-            return code[1];
+            return mPack.getId();
         }
 
         /**
@@ -149,26 +151,6 @@ public class DownloadPack extends Activity {
 
     }
 
-    /**
-     * Showing Dialog
-     * */
-
-    protected Dialog onCreateDialog(int id) {
-        switch (id) {
-            case progress_bar_type: // we set this to 0
-                pDialog = new ProgressDialog(this);
-                pDialog.setMessage("Downloading file. Please wait...");
-                pDialog.setIndeterminate(false);
-                pDialog.setMax(100);
-                pDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-                pDialog.setCancelable(true);
-                //pDialog.show();
-                return pDialog;
-            default:
-                return null;
-        }
-    }
-
     private void initPrgDlg() {
         pDialog = new ProgressDialog(this);
         pDialog.setMessage("Downloading file. Please wait...");
@@ -176,10 +158,6 @@ public class DownloadPack extends Activity {
         pDialog.setMax(100);
         pDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         pDialog.setCancelable(true);
-        //pDialog.show();
-    }
-
-    private void showPrgDlg() {
         pDialog.show();
     }
 
@@ -241,6 +219,12 @@ public class DownloadPack extends Activity {
             }
 
             zis.close();
+
+            // when extra done, delete file
+            File file = new File(fullPath);
+            if (file.exists()) {
+                file.delete();
+            }
         }
         catch(IOException e)
         {
@@ -251,12 +235,24 @@ public class DownloadPack extends Activity {
         return true;
     }
 
-    private int updateThumb(String id, String fullPath) {
-        String firstFile = fullPath + SettingSystem.EXTRA_FOLDER + "1.jpg";
+    /**
+     * update data in db. thumbnail and pack. pack link will be removed meaning is offline
+     * @param packObj
+     * @param fullPath
+     * @return
+     */
+    private boolean insertDb(ImgPackObj packObj, String fullPath) {
+        packObj.setThumb(fullPath + SettingSystem.EXTRA_FOLDER + "1.jpg");
+        packObj.setPack(fullPath + SettingSystem.EXTRA_FOLDER);
+        return saveToDb(packObj);
+    }
 
+    private boolean saveToDb(ImgPackObj obj) {
         FeedReaderSQLite sqLite = new FeedReaderSQLite(this);
-        ImgPackObj obj = sqLite.getObject(id);
-        obj.setThumb(firstFile);
-        return sqLite.updateObject(obj);
+        if (sqLite.putObject(obj) > 0) {
+            sqLite.closeDb();
+            return true;
+        }
+        return false;
     }
 }

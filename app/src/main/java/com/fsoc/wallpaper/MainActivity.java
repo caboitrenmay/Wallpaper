@@ -8,6 +8,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.fsoc.wallpaper.util.SettingSystem;
+import com.nostra13.universalimageloader.cache.memory.impl.WeakMemoryCache;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+import com.nostra13.universalimageloader.core.assist.QueueProcessingType;
 
 public class MainActivity extends Activity {
 	private static final String TAG = MainActivity.class.getSimpleName();
@@ -16,6 +20,13 @@ public class MainActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+
+		// Create global configuration and initialize ImageLoader with this config
+		ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(this).threadPriority(Thread.NORM_PRIORITY - 2)
+				.denyCacheImageMultipleSizesInMemory().memoryCache(new WeakMemoryCache())
+				.memoryCacheSize(5 * 1024 * 1024).diskCacheSize(50 * 1024 * 1024)
+				.tasksProcessingOrder(QueueProcessingType.LIFO).build();
+		ImageLoader.getInstance().init(config);
 
         SettingSystem settingSystem = new SettingSystem(getApplicationContext());
         if (!settingSystem.initSetting()) {

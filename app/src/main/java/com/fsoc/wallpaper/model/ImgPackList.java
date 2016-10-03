@@ -1,9 +1,9 @@
 package com.fsoc.wallpaper.model;
 
+import com.google.gson.Gson;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import com.google.gson.Gson;
 
 public class ImgPackList extends ArrayList<ImgPackObj> {
 
@@ -31,4 +31,29 @@ public class ImgPackList extends ArrayList<ImgPackObj> {
 		Gson gson = new Gson();
 		return gson.toJson(this);
 	}
+
+	public void addAllEx(ArrayList<ImgPackObj> onlineList) {
+        ArrayList<ImgPackObj> canAddList = new ArrayList<>();
+        for (ImgPackObj onlineObj : onlineList) {
+            if (!isExist(onlineObj)) {
+                canAddList.add(onlineObj);
+            }
+        }
+        this.addAll(canAddList);
+	}
+
+    /**
+     * check exist id in currently list.
+     * @param obj
+     * @return
+     */
+    private boolean isExist(ImgPackObj obj) {
+        for (ImgPackObj currentObj : this) {
+            // if any object same id
+            if (currentObj.getId().equals(obj.getId())) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

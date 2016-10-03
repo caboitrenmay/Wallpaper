@@ -9,9 +9,7 @@ public class SettingsPreference {
 
 	SharedPreferences prefs;
 	Editor prefsEditor;
-	private final String ITEM_DOWNLOADED = "ITEM_DOWNLOADED";
-	private final String ID_LIST = "ID_LIST";
-	
+
 	private final String ID_PACK = "ID_PACK";
 	
 	public SettingsPreference(Context context){
@@ -40,39 +38,20 @@ public class SettingsPreference {
 			return instance;
 		}
 	}
-	
-	public void setItemDownloaded(String itemDownloaded) {
-		String current = prefs.getString(ITEM_DOWNLOADED, "");
-		String result;
-		if (current.equals("")) {
-			result = current + itemDownloaded;
-		}
-		else {
-			result = current + "," + itemDownloaded;
-		}
-		
-        prefsEditor.putString(ITEM_DOWNLOADED, result);
-        prefsEditor.commit();
-    }
 
-    public String getItemDownloaded() {
-        return prefs.getString(ITEM_DOWNLOADED, "");
-	}
-    
-    /*public void setIdList(String json) {
-    	prefsEditor.putString(ID_LIST, json);
-        prefsEditor.commit();
-	}
-    
-    public String getIdList() {
-        return prefs.getString(ID_LIST, "");
-	}*/
-    
+    /**
+	 * set selected package.
+	 * @param pack
+     */
     public void setIdPack(String pack) {
     	prefsEditor.putString(ID_PACK, pack);
         prefsEditor.commit();
 	}
-    
+
+    /**
+	 * get currently package.
+	 * @return
+     */
     public String getIdPack() {
         return prefs.getString(ID_PACK, "1");
 	}

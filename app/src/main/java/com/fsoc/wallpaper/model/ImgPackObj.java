@@ -16,6 +16,12 @@ public class ImgPackObj {
 		this.thumb = thumb;
 	}
 
+	public ImgPackObj(String name, String thumb, String pack) {
+		this.name = name;
+		this.thumb = thumb;
+		this.pack = pack;
+	}
+
 	public String getId() {
 		return id;
 	}

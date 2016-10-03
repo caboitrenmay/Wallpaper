@@ -11,12 +11,11 @@ import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.View;
 
+import com.fsoc.wallpaper.util.SettingSystem;
 import com.fsoc.wallpaper.util.SettingsPreference;
 import com.fsoc.wallpaper.view.ScreenSlidePageFragment;
-import com.nostra13.universalimageloader.cache.memory.impl.WeakMemoryCache;
-import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
-import com.nostra13.universalimageloader.core.assist.QueueProcessingType;
+
+import static com.nostra13.universalimageloader.core.ImageLoader.TAG;
 
 public class ScreenSlidePagerActivity extends FragmentActivity {
     /**
@@ -39,19 +38,9 @@ public class ScreenSlidePagerActivity extends FragmentActivity {
     private String idSub = "1";
     private SettingsPreference preference;
 
-    @SuppressWarnings("deprecation")
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
-        // Create global configuration and initialize ImageLoader with this config
-        ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(this).threadPriority(Thread.NORM_PRIORITY - 2)
-                .denyCacheImageMultipleSizesInMemory().memoryCache(new WeakMemoryCache())
-                .memoryCacheSize(5 * 1024 * 1024).diskCacheSize(50 * 1024 * 1024)
-                .tasksProcessingOrder(QueueProcessingType.LIFO).build();
-        ImageLoader.getInstance().init(config);
-        
-        
         setContentView(R.layout.activity_screen_slide);
         
         preference = SettingsPreference.getInstance(this);
@@ -61,22 +50,6 @@ public class ScreenSlidePagerActivity extends FragmentActivity {
         mPager = (ViewPager) findViewById(R.id.pager);
         mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
         mPager.setAdapter(mPagerAdapter);
-        //mPager.setCurrentItem(NUM_PAGES/2);
-        
-        
-        // check status with server
-        /*new Thread(new Runnable() {
-			
-			@Override
-			public void run() {
-				final String resutl = ConnectServer.checkStatus(ScreenSlidePagerActivity.this);
-				runOnUiThread(new Runnable() {
-					public void run() {
-						//Toast.makeText(ScreenSlidePagerActivity.this, resutl + "", Toast.LENGTH_SHORT).show();
-					}
-				});
-			}
-		}).start();*/
     }
 
     /*@Override
@@ -101,7 +74,6 @@ public class ScreenSlidePagerActivity extends FragmentActivity {
         public Fragment getItem(int position) {
             //return new ScreenSlidePageFragment();
             Log.d("ScreenSlidePagerAdapter","position: " + position);
-            mCurrentPos = position;
         	return ScreenSlidePageFragment.newInstance(position, idSub);
         }
 
@@ -111,14 +83,28 @@ public class ScreenSlidePagerActivity extends FragmentActivity {
         }
     }
 
-    private int mCurrentPos = 0;
-    
     public void getMore(View v) {
     	Intent intent = new Intent(ScreenSlidePagerActivity.this, ListPackActivity.class);
 		startActivityForResult(intent, 0);
     }
+
+    /**
+     * Click set wall paper.
+     * @param v View
+     */
     public void setWallpaper(View v) {
-        //SettingSystem.
+        setPaper(mPager.getCurrentItem());
+    }
+
+    private void setPaper(int position) {
+        if (idSub.equals("1")) {
+            SettingSystem.setWallpaper(this, ScreenSlidePagerActivity.res[position]);
+        }
+        else {
+            String uri = SettingSystem.getAppPath(this) + idSub + SettingSystem.EXTRA_FOLDER + (position+1) + SettingSystem.FILE_TYPE;
+            Log.d(TAG, "onCreateView: uri: " + uri);
+            SettingSystem.setWallpaper(this, uri);
+        }
     }
     
     
@@ -131,4 +117,11 @@ public class ScreenSlidePagerActivity extends FragmentActivity {
     		finish();
     	}
     }
+
+    public static int[] res = { R.drawable.bg1, R.drawable.bg2, R.drawable.bg3,
+            R.drawable.bg4, R.drawable.bg5, R.drawable.bg6, R.drawable.bg7,
+            R.drawable.bg8, R.drawable.bg9, R.drawable.bg10, R.drawable.bg11,
+            R.drawable.bg12, R.drawable.bg13, R.drawable.bg14, R.drawable.bg15,
+            R.drawable.bg16, R.drawable.bg17, R.drawable.bg18, R.drawable.bg19, R.drawable.bg20 };
+
 }

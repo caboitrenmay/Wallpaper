@@ -1,6 +1,8 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".ScreenSlidePagerActivity">
 
     <android.support.v4.view.ViewPager
         android:id="@+id/pager"
@@ -21,17 +23,17 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="right"
-            android:background="#e60200"
+            android:background="#2196F3"
             android:padding="5dp"
             android:onClick="getMore"
             android:clickable="true"
-            android:text="Thêm ảnh hot"
+            android:text="@string/action_more"
             android:textColor="#ffffff"
-            android:textSize="18sp" />
+            style="?android:textAppearanceMedium" />
 
     </FrameLayout>
 
-    <!--<RelativeLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
@@ -42,15 +44,14 @@
 
         <TextView
             android:id="@+id/text"
-            style="?android:textAppearanceMedium"
+            style="?android:textAppearanceLarge"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:lineSpacingMultiplier="1.2"
             android:padding="16dp"
             android:gravity="center"
             android:text="@string/action_set"
-            android:clickable="true"
             android:textColor="@android:color/white"/>
-    </RelativeLayout>-->
+    </RelativeLayout>
 
 </RelativeLayout>

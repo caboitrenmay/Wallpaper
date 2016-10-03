@@ -3,6 +3,7 @@ package com.fsoc.wallpaper;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,14 +27,15 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ListPackActivity extends DownloadPack {
 	
 	private ImageLoader imageLoader;
+    private final String TAG = "ListPackActivity";
 
-	@Override
+    @Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_list);
@@ -47,16 +49,17 @@ public class ListPackActivity extends DownloadPack {
 			@Override
 			public void run() {
 
-
                 final ImgPackList packList = new ImgPackList();
                 ImgPackObj imgPackObj = new ImgPackObj();
                 imgPackObj.setId("1");
                 imgPackObj.setName("Pokemon");
-                imgPackObj.setThumb("drawable://" + R.drawable.bg2);
+                imgPackObj.setThumb("drawable://" + R.drawable.bg1);
+                imgPackObj.setPack("drawable://");
                 packList.add(imgPackObj);
 
                 // add db
                 packList.addAll(getObjectsDb());
+                Log.d(TAG, "offline list size: " + packList.size());
 
 				String resutl = ConnectServer.listPackage(ListPackActivity.this);
 
@@ -82,17 +85,16 @@ public class ListPackActivity extends DownloadPack {
 				JsonResultHandler resultHandler = new JsonResultHandler(resutl);
 				if (resultHandler.isOk()) {
 					JSONObject jsonObject = resultHandler.getjObj();
-					JSONArray array = null;
+					JSONArray array = new JSONArray();
 					try {
 						jsonObject = jsonObject.getJSONObject("result");
 						array = jsonObject.getJSONArray("element");
+                        ArrayList<ImgPackObj> onlineList = ImgPackList.initFromJsonArray(array.toString());
+                        Log.d(TAG, "online list size: " + onlineList.size());
+                        packList.addAllEx(onlineList);
+                        Log.d(TAG, "all list size: " + packList.size());
 					} catch (JSONException e) {
 						e.printStackTrace();
-					}
-
-					
-					if (!array.isNull(0)) {
-						packList.addAll(ImgPackList.initFromJsonArray(array.toString()));
 					}
 				}
 
@@ -116,9 +118,6 @@ public class ListPackActivity extends DownloadPack {
     public void downloadFinish(String id) {
         super.downloadFinish(id);
 		if (id.equals("ERROR")) return;
-
-        SettingsPreference preference = SettingsPreference.getInstance(this);
-        preference.setItemDownloaded("" + id);
 
         adapter.notifyDataSetChanged();
     }
@@ -168,38 +167,28 @@ public class ListPackActivity extends DownloadPack {
 			//icon
 			imageLoader.displayImage(packList.get(position).getThumb(), holder.icon);
 
-			SettingsPreference preference = SettingsPreference.getInstance(activity);
-			String[] array = preference.getItemDownloaded().split(",");
-			
-			if (Arrays.asList(array).contains(packList.get(position).getId()) || packList.get(position).getId().equals("1")) {
-				holder.add.setText("Set ảnh");
-			}
-			else {
-				holder.add.setText("Thêm ảnh");
-			}
-			
-			holder.add.setOnClickListener(new View.OnClickListener() {
+            if (packList.get(position).getPack().contains("http")) {
+                holder.add.setText(getText(R.string.get_pack));
+            }
+            else {
+                holder.add.setText(getText(R.string.set_pack));
+            }
+
+            holder.add.setOnClickListener(new View.OnClickListener() {
 				
 				@Override
 				public void onClick(View v) {
+                    SettingsPreference preference = SettingsPreference.getInstance(activity);
+                    if (packList.get(position).getPack().contains("http")) {
+                        Toast.makeText(activity, "id: " + packList.get(position).getId(), Toast.LENGTH_SHORT).show();
 
-					//new DownloadFileFromURL().execute(packList.get(position).getPack(), packList.get(position).getId());
-
-					SettingsPreference preference = SettingsPreference.getInstance(activity);
-					String[] array = preference.getItemDownloaded().split(",");
-					
-					if (Arrays.asList(array).contains(packList.get(position).getId()) || packList.get(position).getId().equals("1")) {
-						preference.setIdPack(packList.get(position).getId());
-						activity.setResult(RESULT_OK);
-						activity.finish();
-					}
-					else {
-						Toast.makeText(activity, "id: " + packList.get(position).getId(), Toast.LENGTH_SHORT).show();
-                        // save to db
-                        saveToDb(packList.get(position));
-
-						new DownloadFileFromURL().execute(packList.get(position).getPack(), packList.get(position).getId());
-					}
+                        new DownloadFileFromURL(packList.get(position)).execute();
+                    }
+                    else {
+                        preference.setIdPack(packList.get(position).getId());
+                        activity.setResult(RESULT_OK);
+                        activity.finish();
+                    }
 				}
 			});
 			
@@ -221,15 +210,6 @@ public class ListPackActivity extends DownloadPack {
 			return position;
 		}
 	}
-
-    private boolean saveToDb(ImgPackObj obj) {
-        FeedReaderSQLite sqLite = new FeedReaderSQLite(this);
-        if (sqLite.putObject(obj) > 0) {
-            sqLite.closeDb();
-            return true;
-        }
-        return false;
-    }
 
     private List<ImgPackObj> getObjectsDb() {
         FeedReaderSQLite sqLite = new FeedReaderSQLite(this);

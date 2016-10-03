@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static android.provider.BaseColumns._ID;
+import static com.fsoc.wallpaper.db.FeedReaderContract.FeedEntry.COLUMN_NAME_PACK;
 import static com.fsoc.wallpaper.db.FeedReaderContract.FeedEntry.COLUMN_NAME_SUBTITLE;
 import static com.fsoc.wallpaper.db.FeedReaderContract.FeedEntry.COLUMN_NAME_TITLE;
 import static com.fsoc.wallpaper.db.FeedReaderContract.FeedEntry.TABLE_NAME;
@@ -50,6 +51,7 @@ public class FeedReaderSQLite {
         values.put(_ID, obj.getId());
         values.put(COLUMN_NAME_TITLE, obj.getName());
         values.put(COLUMN_NAME_SUBTITLE, obj.getThumb());
+        values.put(COLUMN_NAME_PACK, obj.getPack());
 
         // Insert the new row, returning the primary key value of the new row
         long newRowId = db.insert(TABLE_NAME, null, values);
@@ -64,7 +66,8 @@ public class FeedReaderSQLite {
         String[] projection = {
                 _ID,
                 COLUMN_NAME_TITLE,
-                COLUMN_NAME_SUBTITLE
+                COLUMN_NAME_SUBTITLE,
+                COLUMN_NAME_PACK
         };
 
         // Filter results WHERE "title" = 'My Title'
@@ -89,7 +92,7 @@ public class FeedReaderSQLite {
                 cursor.getColumnIndexOrThrow(_ID)
         );
 
-        ImgPackObj obj = new ImgPackObj(cursor.getString(1), cursor.getString(2));
+        ImgPackObj obj = new ImgPackObj(cursor.getString(1), cursor.getString(2), cursor.getString(3));
         return obj;
     }
 
@@ -108,6 +111,7 @@ public class FeedReaderSQLite {
                 obj.setId(cursor.getString(0));
                 obj.setName(cursor.getString(1));
                 obj.setThumb(cursor.getString(2));
+                obj.setPack((cursor.getString(3)));
                 // Adding contact to list
                 objectList.add(obj);
             } while (cursor.moveToNext());
@@ -159,8 +163,10 @@ public class FeedReaderSQLite {
 
     public int updateObject(ImgPackObj obj) {
         ContentValues values = new ContentValues();
+        values.put(_ID, obj.getId());
         values.put(COLUMN_NAME_TITLE, obj.getName());
         values.put(COLUMN_NAME_SUBTITLE, obj.getThumb());
+        values.put(COLUMN_NAME_PACK, obj.getPack());
 
         // updating row
         return db.update(TABLE_NAME, values, _ID + " = ?",

@@ -5,6 +5,10 @@
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
 
+    <string name="get_pack">Get Package</string>
+    <string name="set_pack">Set Package</string>
+
+    <string name="action_more">More Wallpaper</string>
     <string name="action_set">Set Wallpaper</string>
 
 </resources>

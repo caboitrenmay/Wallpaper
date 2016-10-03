@@ -1,5 +1,6 @@
 package com.fsoc.wallpaper.util;
 
+import android.app.Activity;
 import android.app.WallpaperManager;
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -58,27 +59,48 @@ public class SettingSystem {
         return URI_PREFIX + getAppPath(context);
     }
 
-    public static void setWallpaper(Context context, int res) {
-        WallpaperManager myWallpaperManager = WallpaperManager.getInstance(context);
-        try {
-            myWallpaperManager.setResource(res);
-            Toast.makeText(context, "Set wallpaper done!", Toast.LENGTH_LONG).show();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public static void setWallpaper(final Activity activity, final int res) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    WallpaperManager myWallpaperManager = WallpaperManager.getInstance(activity);
+                    myWallpaperManager.setResource(res);
+                    activity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(activity, "Set wallpaper done!", Toast.LENGTH_LONG).show();
+                        }
+                    });
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
     }
 
-    public static void setWallpaper(Context context, String photoPath) {
-        WallpaperManager myWallpaperManager   = WallpaperManager.getInstance(context);
+    public static void setWallpaper(final Activity activity, final String photoPath) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    WallpaperManager myWallpaperManager   = WallpaperManager.getInstance(activity);
+                    BitmapFactory.Options options = new BitmapFactory.Options();
+                    options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+                    Bitmap bitmap = BitmapFactory.decodeFile(photoPath, options);
+                    myWallpaperManager.setBitmap(bitmap);
+                    activity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(activity, "Set wallpaper done!", Toast.LENGTH_LONG).show();
+                        }
+                    });
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
 
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-        Bitmap bitmap = BitmapFactory.decodeFile(photoPath, options);
-        try {
-            myWallpaperManager.setBitmap(bitmap);
-            Toast.makeText(context, "Set wallpaper done!", Toast.LENGTH_LONG).show();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
     }
 }
